@@ -814,6 +814,9 @@ async function loadAsset(ticker) {
           chart.setData(data);
         }
         
+        updateStats(data);
+        updateRightSections(meta, data);
+        updateScore(data);
         runTechnicalAnalysis();
         addLog(`REALTIME MARKET DATA SYNCHRONIZED FOR [${resolvedTicker}].`, 'success');
 
