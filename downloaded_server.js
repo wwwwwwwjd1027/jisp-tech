@@ -2,7 +2,6 @@ const express = require('express');
 const cors = require('cors');
 const fs = require('fs');
 const path = require('path');
-const https = require('https');
 
 const app = express();
 const PORT = process.env.PORT || 8000;
@@ -10,78 +9,6 @@ const DB_FILE = path.join(__dirname, 'db.json');
 
 app.use(cors());
 app.use(express.json());
-
-// ─── REALTIME CHART PROXY API WITH IN-MEMORY CACHE (ULTRA FAST) ───
-const chartCache = new Map();
-const CACHE_TTL_MS = 3 * 60 * 1000; // 3 minutes cache
-
-app.get('/api/chart', (req, res) => {
-    let ticker = (req.query.ticker || 'AAPL').toUpperCase();
-    let timeframe = (req.query.timeframe || 'daily').toLowerCase();
-    const cacheKey = `${ticker}_${timeframe}`;
-
-    // Return instant cached response if available
-    const cached = chartCache.get(cacheKey);
-    if (cached && (Date.now() - cached.timestamp < CACHE_TTL_MS)) {
-        return res.json(cached.data);
-    }
-
-    let yahooTicker = ticker;
-    if (/^\d{6}$/.test(ticker)) {
-        yahooTicker = (ticker === '035900') ? `${ticker}.KQ` : `${ticker}.KS`;
-    } else if (['BTC', 'ETH', 'SOL', 'BNB', 'XRP', 'ADA', 'DOGE', 'DOT', 'AVAX', 'LINK', 
-                'MATIC', 'UNI', 'ATOM', 'LTC', 'ETC', 'FIL', 'NEAR', 'APT', 'ARB', 'OP', 
-                'ICP', 'STX', 'IMX', 'AAVE', 'MKR', 'CRV', 'RENDER', 'INJ', 'SEI', 'SUI', 
-                'TIA', 'JUP', 'WIF', 'PEPE', 'BONK', 'SHIB', 'FLOKI', 'MEME', 'ELON', 
-                'BABYDOGE', 'KISHU', 'SAMO', 'MYRO', 'POPCAT', 'MEW', 'BRETT', 'BOME', 
-                'SLERF', 'TREMP', 'MOTHER', 'GME_COIN', 'TRUMP', 'TURBO', 'LADYS', 'COQ', 'MOG'].includes(ticker)) {
-        yahooTicker = (ticker === 'GME_COIN') ? 'GME-USD' : `${ticker}-USD`;
-    }
-
-    let rangeVal = '20y';
-    let intervalVal = '1d';
-    if (timeframe === 'weekly') intervalVal = '1wk';
-    else if (timeframe === 'monthly' || timeframe === 'yearly') { rangeVal = 'max'; intervalVal = '1mo'; }
-    else if (timeframe === 'minute') { rangeVal = '5d'; intervalVal = '15m'; }
-    else if (timeframe === 'tick') { rangeVal = '1d'; intervalVal = '1m'; }
-
-    const targetUrl = `https://query1.finance.yahoo.com/v8/finance/chart/${encodeURIComponent(yahooTicker)}?range=${rangeVal}&interval=${intervalVal}`;
-
-    const reqOptions = {
-        headers: {
-            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
-        },
-        timeout: 10000 // 10s timeout to allow large historical data fetches
-    };
-
-    const request = https.get(targetUrl, reqOptions, (apiRes) => {
-        let rawData = '';
-        apiRes.on('data', chunk => rawData += chunk);
-        apiRes.on('end', () => {
-            try {
-                const parsed = JSON.parse(rawData);
-                // Save to ultra-fast cache
-                chartCache.set(cacheKey, { timestamp: Date.now(), data: parsed });
-                res.json(parsed);
-            } catch(e) {
-                if (cached) return res.json(cached.data);
-                res.status(500).json({ error: 'Failed to parse Yahoo Finance API data' });
-            }
-        });
-    });
-
-    request.on('error', (err) => {
-        console.error('Yahoo Finance Proxy Error:', err);
-        if (cached) return res.json(cached.data);
-        res.status(500).json({ error: 'Failed to fetch Yahoo Finance data' });
-    });
-
-    request.on('timeout', () => {
-        request.destroy();
-        if (cached) return res.json(cached.data);
-        res.status(504).json({ error: 'Request timeout' });
-    });
-});
 
 // Initialize Local JSON Database
 if (!fs.existsSync(DB_FILE)) {
