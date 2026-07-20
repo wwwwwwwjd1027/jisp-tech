@@ -1,0 +1,468 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>JISP Chart Pro</title>
+  <link rel="stylesheet" href="css/styles.css">
+  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-7866792361968009"
+   crossorigin="anonymous"></script>
+</head>
+<body>
+
+  <div class="hud-container">
+    
+    <!-- ① HEADER -->
+    <header class="hud-header">
+      <div class="hud-title">
+        <h1>JISP Chart Pro</h1>
+        <div class="hud-subtitle">Professional Trading Dashboard</div>
+      </div>
+      
+      <div class="system-status" style="display: flex; align-items: center; gap: 16px;">
+        <div class="status-item">
+          <span class="status-indicator"></span>
+          <span>SYSTEM ONLINE</span>
+        </div>
+        <div id="portal-auth-btn" class="premium-badge" style="background:#2563eb; color:#fff; border-color:#2563eb; cursor:pointer; font-size: 11px; padding: 4px 10px; border-radius: 12px; font-weight: 700;">로그인</div>
+      </div>
+    </header>
+
+    <!-- ② MAIN PANEL GRID -->
+    <div class="hud-main-grid">
+      
+      <!-- LEFT SIDEBAR -->
+      <aside class="hud-card">
+        <div class="hud-card-title">Data Source</div>
+        
+        <!-- Drag & Drop uploader -->
+        <div class="csv-dropzone" id="csv-dropzone">
+          <span class="icon">📄</span>
+          <span class="label">Drag & Drop CSV</span>
+          <span class="subtext">Load historical OHLCV data</span>
+          <input type="file" id="csv-file-input" style="display: none;" accept=".csv">
+        </div>
+
+        <div class="hud-card-title">Search Market</div>
+        <div style="display: flex; gap: 8px;">
+          <input type="text" id="ticker-search-input" list="ticker-suggestions" placeholder="Ticker (e.g. AAPL)" 
+                 style="flex: 1; background: var(--bg-input); border: 1px solid var(--border-color); border-radius: 6px; padding: 10px; color: var(--color-text); font-family: var(--font-hud); font-size: 13px; text-transform: uppercase; outline: none;">
+          <datalist id="ticker-suggestions"></datalist>
+          <button id="ticker-search-btn" style="background: #111827; border: none; border-radius: 6px; color: #fff; font-family: var(--font-hud); font-weight: 600; font-size: 12px; padding: 0 16px; cursor: pointer; transition: var(--transition);">LOAD</button>
+        </div>
+
+        <div class="hud-card-title">Watchlist</div>
+        <div class="asset-selector" id="asset-selector">
+          <div class="asset-item active" data-ticker="NVDA">
+            <span class="asset-ticker">NVDA</span>
+            <span class="asset-name">Nvidia Corp.</span>
+          </div>
+          <div class="asset-item" data-ticker="TSLA">
+            <span class="asset-ticker">TSLA</span>
+            <span class="asset-name">Tesla Motors</span>
+          </div>
+          <div class="asset-item" data-ticker="BTC">
+            <span class="asset-ticker">BTC</span>
+            <span class="asset-name">Bitcoin</span>
+          </div>
+          <div class="asset-item" data-ticker="AAPL">
+            <span class="asset-ticker">AAPL</span>
+            <span class="asset-name">Apple Inc.</span>
+          </div>
+          <div class="asset-item" data-ticker="MSFT">
+            <span class="asset-ticker">MSFT</span>
+            <span class="asset-name">Microsoft Corp.</span>
+          </div>
+        </div>
+
+        <div class="hud-card-title">Indicators</div>
+        <div class="indicators-controls">
+          <div class="indicator-row">
+            <div class="indicator-label"><span> Bollinger Bands</span></div>
+            <label class="hud-switch">
+              <input type="checkbox" id="switch-bb" checked>
+              <span class="hud-slider"></span>
+            </label>
+          </div>
+          <div class="indicator-row">
+            <div class="indicator-label"><span> Exponential MA (10)</span></div>
+            <label class="hud-switch">
+              <input type="checkbox" id="switch-ema" checked>
+              <span class="hud-slider"></span>
+            </label>
+          </div>
+          <div class="indicator-row">
+            <div class="indicator-label"><span> Simple MA (20)</span></div>
+            <label class="hud-switch">
+              <input type="checkbox" id="switch-sma" checked>
+              <span class="hud-slider"></span>
+            </label>
+          </div>
+          <div class="indicator-row">
+            <div class="indicator-label"><span> RSI Oscillator</span></div>
+            <label class="hud-switch">
+              <input type="checkbox" id="switch-rsi" checked>
+              <span class="hud-slider"></span>
+            </label>
+          </div>
+          <div class="indicator-row">
+            <div class="indicator-label"><span> MACD Indicator</span></div>
+            <label class="hud-switch">
+              <input type="checkbox" id="switch-macd" checked>
+              <span class="hud-slider"></span>
+            </label>
+          </div>
+          <div class="indicator-row">
+            <div class="indicator-label"><span> Pivot S/R Lines</span></div>
+            <label class="hud-switch">
+              <input type="checkbox" id="switch-sr" checked>
+              <span class="hud-slider"></span>
+            </label>
+          </div>
+          <div class="indicator-row">
+            <div class="indicator-label"><span style="display:flex; align-items:center; gap:4px;">👑 AI Forecast</span></div>
+            <label class="hud-switch">
+              <input type="checkbox" id="switch-forecast" checked>
+              <span class="hud-slider"></span>
+            </label>
+          </div>
+        </div>
+      </aside>
+
+      <!-- CENTER VIEWPORT -->
+      <main class="hud-chart-panel">
+        <div class="custom-tabs" id="timeframe-tabs" style="margin-bottom: 12px;">
+          <button class="custom-tab-btn active" data-tf="daily">일봉</button>
+          <button class="custom-tab-btn" data-tf="weekly">주봉</button>
+          <button class="custom-tab-btn" data-tf="monthly">월봉</button>
+          <button class="custom-tab-btn" data-tf="yearly">년봉</button>
+          <button class="custom-tab-btn" data-tf="minute">분봉(15분)</button>
+          <button class="custom-tab-btn" data-tf="tick">분봉(1분)</button>
+        </div>
+        
+        <div class="chart-view-container" id="chart-container">
+          <canvas id="chart-canvas" class="chart-canvas"></canvas>
+        </div>
+        
+        <div style="display: flex; gap: 16px; margin-top: 16px; height: 130px;">
+          <div class="hud-terminal" id="terminal-logs" style="flex: 1.2;">
+            <!-- Logs -->
+          </div>
+
+          <div class="hud-card" style="flex: 1; padding: 16px; margin: 0;">
+            <div style="display: flex; justify-content: space-between; border-bottom: 1px solid var(--border-color); padding-bottom: 8px; margin-bottom: 8px;">
+              <span id="info-company-name" style="font-size: 13px; font-weight: 700; color: var(--color-text); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 140px;">Nvidia Corp.</span>
+              <span id="info-ticker" style="font-family: var(--font-mono); font-size: 13px; color: var(--color-muted); font-weight: 600;">NVDA</span>
+            </div>
+            
+            <div style="display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 12px;">
+              <span id="info-current-price" style="font-family: var(--font-mono); font-size: 16px; font-weight: 700; color: var(--color-text);">$910.50</span>
+              <span id="info-price-change" style="font-family: var(--font-mono); font-size: 11px; font-weight: 600; color: #10b981;">+12.45 (+1.38%)</span>
+            </div>
+            
+            <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; font-size: 11px;">
+              <div style="background: var(--bg-input); padding: 6px 8px; border-radius: 6px;">
+                <div style="color: var(--color-muted); font-size: 9px; font-weight: 600;">PER</div>
+                <div id="financial-per" style="font-family: var(--font-mono); font-weight: 700; margin-top: 2px;">64.5x</div>
+              </div>
+              <div style="background: var(--bg-input); padding: 6px 8px; border-radius: 6px;">
+                <div style="color: var(--color-muted); font-size: 9px; font-weight: 600;">PBR</div>
+                <div id="financial-pbr" style="font-family: var(--font-mono); font-weight: 700; margin-top: 2px;">22.8x</div>
+              </div>
+              <div style="background: var(--bg-input); padding: 6px 8px; border-radius: 6px;">
+                <div style="color: var(--color-muted); font-size: 9px; font-weight: 600;">ROE</div>
+                <div id="financial-roe" style="font-family: var(--font-mono); font-weight: 700; margin-top: 2px;">38.4%</div>
+              </div>
+              <div style="background: var(--bg-input); padding: 6px 8px; border-radius: 6px;">
+                <div style="color: var(--color-muted); font-size: 9px; font-weight: 600;">EPS</div>
+                <div id="financial-eps" style="font-family: var(--font-mono); font-weight: 700; margin-top: 2px;">$2.80</div>
+              </div>
+              <div style="background: var(--bg-input); padding: 6px 8px; border-radius: 6px;">
+                <div style="color: var(--color-muted); font-size: 9px; font-weight: 600;">Rev</div>
+                <div id="financial-rev" style="font-family: var(--font-mono); font-weight: 700; margin-top: 2px;">$96.3B</div>
+              </div>
+              <div style="background: var(--bg-input); padding: 6px 8px; border-radius: 6px;">
+                <div style="color: var(--color-muted); font-size: 9px; font-weight: 600;">Inc</div>
+                <div id="financial-inc" style="font-family: var(--font-mono); font-weight: 700; margin-top: 2px;">$53.0B</div>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <div class="jisp-ad-banner" id="jisp-ad-banner" style="margin-top: 16px;">
+          <span>📢 [광고] JISP Pro 회원이 되시면, 무제한 차트 예측 기능 및 모든 샵 코스튬을 마음껏 사용하실 수 있습니다!</span>
+          <button class="jisp-ad-upgrade-btn" id="jisp-ad-upgrade-btn">JISP Pro 구독하기</button>
+        </div>
+      </main>
+
+      <!-- RIGHT SIDEBAR -->
+      <aside class="hud-card" style="justify-content: flex-start;">
+        
+        <div class="custom-tabs" id="right-hud-tabs" style="border-bottom: 1px solid var(--border-color); padding-bottom: 8px; margin-bottom: 16px; overflow-x: auto; gap: 4px;">
+          <button class="custom-tab-btn active" data-tab="score" style="flex: 1; min-width: 60px; color: #fbbf24;">👑 Analysis</button>
+          <button class="custom-tab-btn" data-tab="pivots" style="flex: 1; min-width: 50px;">Pivots</button>
+          <button class="custom-tab-btn" data-tab="factors" style="flex: 1; min-width: 50px;">Factors</button>
+          <button class="custom-tab-btn" data-tab="shorts" style="flex: 1; min-width: 60px; color: #fbbf24;">👑 Shorts</button>
+          <button class="custom-tab-btn" data-tab="company" style="flex: 1; min-width: 65px;">Company</button>
+        </div>
+        
+        <div id="right-sec-score" style="display: flex; flex-direction: column; align-items: center; width: 100%; position: relative; min-height: 200px;">
+          <div class="hud-card-title" style="margin-bottom: 16px; width: 100%;">👑 Technical Score</div>
+
+          <!-- Blurry Overlay for free users -->
+          <div id="score-premium-overlay" style="display: none; position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(13, 17, 23, 0.95); backdrop-filter: blur(6px); border-radius: 8px; flex-direction: column; align-items: center; justify-content: center; padding: 20px; text-align: center; z-index: 10;">
+            <div style="font-size: 28px; margin-bottom: 12px;">🔒</div>
+            <div style="font-size: 14px; font-weight: 700; color: #fff; margin-bottom: 8px;">JISP Pro 전용 기능</div>
+            <div style="font-size: 11px; color: #94a3b8; margin-bottom: 16px; line-height: 1.4;">인공지능 기반의 기술적 종합 점수 분석 및 매수/매도 실시간 매매 신호는 Pro 멤버십 회원에게만 제공됩니다.</div>
+            <button class="jisp-ad-upgrade-btn" style="padding: 8px 16px; font-size: 11px;" onclick="openCheckout()">Pro로 업그레이드</button>
+          </div>
+
+          <div class="ai-gauge-container">
+            <div class="ai-gauge" id="ai-gauge">
+              <div class="ai-gauge-glow" id="ai-gauge-glow"></div>
+              <div class="ai-gauge-value" id="ai-gauge-value">50</div>
+              <div class="ai-gauge-label">Score</div>
+            </div>
+          </div>
+          <div class="score-badge neutral" id="score-badge">NEUTRAL</div>
+        </div>
+
+        <div id="right-sec-pivots" style="display: none; flex-direction: column; width: 100%;">
+          <div class="hud-card-title" style="margin-bottom: 12px; width: 100%;">Key Levels</div>
+          <div class="levels-grid">
+            <div class="level-box res">
+              <span class="level-lbl">Resistance</span>
+              <div id="res-levels" class="level-val">---</div>
+            </div>
+            <div class="level-box sup">
+              <span class="level-lbl">Support</span>
+              <div id="sup-levels" class="level-val">---</div>
+            </div>
+          </div>
+        </div>
+
+        <div id="right-sec-factors" style="display: none; flex-direction: column; width: 100%; flex: 1; min-height: 0;">
+          <div class="hud-card-title" style="margin-bottom: 12px; width: 100%;">Breakdown</div>
+          <div class="factor-list" id="factor-list">
+            <!-- Dynamically populated -->
+          </div>
+        </div>
+
+        <!-- PRO-only Short Selling Section -->
+        <div id="right-sec-shorts" style="display: none; flex-direction: column; width: 100%; position: relative; min-height: 250px;">
+          <div class="hud-card-title" style="margin-bottom: 12px; width: 100%;">👑 Short Selling (공매도)</div>
+
+          <!-- Blurry Overlay for free users -->
+          <div id="shorts-premium-overlay" style="display: none; position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(13, 17, 23, 0.9); backdrop-filter: blur(6px); border-radius: 8px; flex-direction: column; align-items: center; justify-content: center; padding: 20px; text-align: center; z-index: 10;">
+            <div style="font-size: 28px; margin-bottom: 12px;">🔒</div>
+            <div style="font-size: 14px; font-weight: 700; color: #fff; margin-bottom: 8px;">JISP Pro 전용 기능</div>
+            <div style="font-size: 11px; color: #94a3b8; margin-bottom: 16px; line-height: 1.4;">숏스퀴즈 확률, 실시간 공매도 잔고, 대차이자율 분석은 Pro 멤버십 회원에게만 제공됩니다.</div>
+            <button class="jisp-ad-upgrade-btn" style="padding: 8px 16px; font-size: 11px;" onclick="openCheckout()">Pro로 업그레이드</button>
+          </div>
+
+          <div class="shorts-grid" style="display: flex; flex-direction: column; gap: 10px; width: 100%;">
+            <div style="background: var(--bg-input); padding: 12px; border-radius: 8px; border: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center;">
+              <div>
+                <div style="color: var(--color-muted); font-size: 10px; font-weight: 600;">SQUEEZE PROBABILITY</div>
+                <div id="shorts-squeeze-prob" style="font-family: var(--font-mono); font-weight: 700; font-size: 18px; color: #ef4444; margin-top: 4px;">84.2%</div>
+              </div>
+              <span id="shorts-squeeze-alert" style="background: rgba(239, 68, 68, 0.15); color: #ef4444; font-size: 10px; font-weight: 700; padding: 4px 8px; border-radius: 6px;">HIGH RISK</span>
+            </div>
+            
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
+              <div style="background: var(--bg-input); padding: 10px; border-radius: 8px; border: 1px solid var(--border-color);">
+                <div style="color: var(--color-muted); font-size: 9px; font-weight: 600;">SHORT INTEREST</div>
+                <div id="shorts-interest-vol" style="font-family: var(--font-mono); font-weight: 700; margin-top: 4px; font-size: 12px; color: var(--color-text);">12.45M shares</div>
+              </div>
+              <div style="background: var(--bg-input); padding: 10px; border-radius: 8px; border: 1px solid var(--border-color);">
+                <div style="color: var(--color-muted); font-size: 9px; font-weight: 600;">BORROW RATE (APR)</div>
+                <div id="shorts-borrow-rate" style="font-family: var(--font-mono); font-weight: 700; margin-top: 4px; font-size: 12px; color: #fbbf24;">4.85%</div>
+              </div>
+            </div>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
+              <div style="background: var(--bg-input); padding: 10px; border-radius: 8px; border: 1px solid var(--border-color);">
+                <div style="color: var(--color-muted); font-size: 9px; font-weight: 600;">DAYS TO COVER</div>
+                <div id="shorts-days-cover" style="font-family: var(--font-mono); font-weight: 700; margin-top: 4px; font-size: 12px; color: var(--color-text);">1.8 Days</div>
+              </div>
+              <div style="background: var(--bg-input); padding: 10px; border-radius: 8px; border: 1px solid var(--border-color);">
+                <div style="color: var(--color-muted); font-size: 9px; font-weight: 600;">SHORT % OF FLOAT</div>
+                <div id="shorts-float-pct" style="font-family: var(--font-mono); font-weight: 700; margin-top: 4px; font-size: 12px; color: var(--color-text);">6.82%</div>
+              </div>
+            </div>
+            
+            <div style="background: var(--bg-input); padding: 10px; border-radius: 8px; border: 1px solid var(--border-color); font-size: 11px; line-height: 1.4; color: var(--color-text-muted);">
+              <div style="color: var(--color-muted); font-size: 9px; font-weight: 600; margin-bottom: 4px;">SHORT SELLER SENTIMENT</div>
+              <span id="shorts-sentiment-desc">Short sellers are highly active. Heavy bearish pressure detected in order books. Margin call limits are close.</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- FREE Company Profile & Financial Statements Section -->
+        <div id="right-sec-company" style="display: none; flex-direction: column; width: 100%; flex: 1; min-height: 0; overflow-y: auto; padding-right: 4px;">
+          <div class="hud-card-title" style="margin-bottom: 12px; width: 100%;">Company Profile & Financials</div>
+          
+          <div class="company-profile-card" style="background: var(--bg-input); padding: 12px; border-radius: 8px; border: 1px solid var(--border-color); margin-bottom: 10px; font-size: 11px;">
+            <div style="display: flex; justify-content: space-between; margin-bottom: 6px;">
+              <span style="color: var(--color-muted); font-weight: 600;">CEO</span>
+              <span id="comp-ceo" style="font-weight: 700; color: var(--color-text);">Jensen Huang</span>
+            </div>
+            <div style="display: flex; justify-content: space-between; margin-bottom: 6px;">
+              <span style="color: var(--color-muted); font-weight: 600;">Industry</span>
+              <span id="comp-industry" style="font-weight: 700; color: var(--color-text);">Semiconductors</span>
+            </div>
+            <div style="display: flex; justify-content: space-between; margin-bottom: 6px;">
+              <span style="color: var(--color-muted); font-weight: 600;">Employees</span>
+              <span id="comp-employees" style="font-weight: 700; color: var(--color-text);">29,600</span>
+            </div>
+            <div style="display: flex; justify-content: space-between; margin-bottom: 6px;">
+              <span style="color: var(--color-muted); font-weight: 600;">Founded</span>
+              <span id="comp-founded" style="font-weight: 700; color: var(--color-text);">1993</span>
+            </div>
+            <div style="border-top: 1px solid var(--border-color); padding-top: 6px; margin-top: 6px; color: var(--color-text-muted); line-height: 1.4; text-align: left;" id="comp-desc">
+              Designs graphics processing units (GPUs) for the gaming and professional markets, as well as system on a chip units for the mobile computing and automotive market.
+            </div>
+          </div>
+          
+          <div class="hud-card-title" style="margin-bottom: 8px; width: 100%; font-size: 11px;">3-Year Financial Statements</div>
+          <table class="financial-table" style="width: 100%; border-collapse: collapse; font-size: 10px; font-family: var(--font-mono); text-align: right; background: var(--bg-input); border-radius: 8px; overflow: hidden; border: 1px solid var(--border-color);">
+            <thead>
+              <tr style="background: rgba(255,255,255,0.02); border-bottom: 1px solid var(--border-color);">
+                <th style="padding: 6px 8px; text-align: left; color: var(--color-muted);">Metric (USD)</th>
+                <th style="padding: 6px 8px; color: var(--color-muted);">2023</th>
+                <th style="padding: 6px 8px; color: var(--color-muted);">2024</th>
+                <th style="padding: 6px 8px; color: var(--color-muted);">2025</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr style="border-bottom: 1px solid rgba(255,255,255,0.02);">
+                <td style="padding: 6px 8px; text-align: left; font-weight: 700; color: var(--color-text);">Revenue</td>
+                <td style="padding: 6px 8px;" id="table-rev-23">27.0B</td>
+                <td style="padding: 6px 8px;" id="table-rev-24">60.9B</td>
+                <td style="padding: 6px 8px;" id="table-rev-25">96.3B</td>
+              </tr>
+              <tr style="border-bottom: 1px solid rgba(255,255,255,0.02);">
+                <td style="padding: 6px 8px; text-align: left; font-weight: 700; color: var(--color-text);">Net Income</td>
+                <td style="padding: 6px 8px;" id="table-inc-23">4.4B</td>
+                <td style="padding: 6px 8px;" id="table-inc-24">29.8B</td>
+                <td style="padding: 6px 8px;" id="table-inc-25">53.0B</td>
+              </tr>
+              <tr style="border-bottom: 1px solid rgba(255,255,255,0.02);">
+                <td style="padding: 6px 8px; text-align: left; font-weight: 700; color: var(--color-text);">Total Assets</td>
+                <td style="padding: 6px 8px;" id="table-ass-23">41.1B</td>
+                <td style="padding: 6px 8px;" id="table-ass-24">65.7B</td>
+                <td style="padding: 6px 8px;" id="table-ass-25">85.2B</td>
+              </tr>
+              <tr style="border-bottom: 1px solid rgba(255,255,255,0.02);">
+                <td style="padding: 6px 8px; text-align: left; font-weight: 700; color: var(--color-text);">Liabilities</td>
+                <td style="padding: 6px 8px;" id="table-lia-23">19.0B</td>
+                <td style="padding: 6px 8px;" id="table-lia-24">22.8B</td>
+                <td style="padding: 6px 8px;" id="table-lia-25">28.4B</td>
+              </tr>
+              <tr>
+                <td style="padding: 6px 8px; text-align: left; font-weight: 700; color: var(--color-text);">Cash Flow</td>
+                <td style="padding: 6px 8px;" id="table-cf-23">5.6B</td>
+                <td style="padding: 6px 8px;" id="table-cf-24">28.0B</td>
+                <td style="padding: 6px 8px;" id="table-cf-25">46.8B</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </aside>
+
+    </div>
+  </div>
+
+
+
+  <!-- Auth (Login & Register) Mock Modal -->
+  <div class="jisp-modal-overlay" id="jisp-auth-overlay">
+    <div class="jisp-modal" style="max-width: 360px;">
+      <div class="jisp-modal-header">
+        <div class="jisp-modal-logo" id="auth-modal-header-title">로그인</div>
+        <button class="jisp-modal-close" id="jisp-auth-close">&times;</button>
+      </div>
+      <div class="jisp-modal-body">
+        <div class="auth-form-group" id="auth-username-group" style="display: none; display: flex; flex-direction: column; gap: 8px; text-align: left; margin-bottom: 16px;">
+          <label class="auth-label" style="font-size: 13px; font-weight: 600; color: #94a3b8;">사용자 이름</label>
+          <input type="text" class="auth-input" id="auth-username-input" placeholder="이름을 입력하세요" style="width:100%; padding:12px; border-radius:12px; border:1px solid #334155; background:#0d1117; color:#fff; font-size:14px; outline:none;">
+        </div>
+        <div class="auth-form-group" style="display: flex; flex-direction: column; gap: 8px; text-align: left; margin-bottom: 16px;">
+          <label class="auth-label" style="font-size: 13px; font-weight: 600; color: #94a3b8;">이메일 주소</label>
+          <input type="email" class="auth-input" id="auth-email-input" placeholder="example@jisp.com" style="width:100%; padding:12px; border-radius:12px; border:1px solid #334155; background:#0d1117; color:#fff; font-size:14px; outline:none;">
+        </div>
+        <div class="auth-form-group" id="auth-password-group" style="display: flex; flex-direction: column; gap: 8px; text-align: left; margin-bottom: 16px;">
+          <label class="auth-label" style="font-size: 13px; font-weight: 600; color: #94a3b8;">비밀번호</label>
+          <input type="password" class="auth-input" id="auth-password-input" placeholder="비밀번호 입력" style="width:100%; padding:12px; border-radius:12px; border:1px solid #334155; background:#0d1117; color:#fff; font-size:14px; outline:none;">
+        </div>
+        <div class="auth-switch-prompt" id="auth-switch-prompt" style="font-size: 13px; color: #94a3b8; margin-top: 14px;">
+          계정이 없으신가요? <span class="auth-switch-link" id="auth-switch-action" style="color: #3b82f6; font-weight: 700; cursor: pointer;">회원가입</span>
+        </div>
+      </div>
+      <div class="jisp-modal-footer">
+        <button class="jisp-pay-submit" id="jisp-auth-submit-btn" style="width:100%; padding:12px; border-radius:12px; border:none; background:#3b82f6; color:#fff; font-weight:700; cursor:pointer;">로그인</button>
+      </div>
+    </div>
+  </div>
+
+  </div>
+
+  <!-- Toss.me Transfer Modal Overlay -->
+  <div class="jisp-modal-overlay" id="jisp-payment-overlay">
+      <div class="jisp-modal" style="max-width: 480px; background: #0b0f19; border: 1px solid #1f293d; color: #fff; font-family: sans-serif; border-radius: 16px; overflow: hidden; box-shadow: 0 20px 40px rgba(0,0,0,0.5);">
+          <div class="jisp-modal-header" style="padding: 16px 20px; border-bottom: 1px solid #1f293d; display: flex; justify-content: space-between; align-items: center;">
+              <div class="jisp-modal-logo" style="font-weight: 700; color: #3b82f6; font-size: 16px; display: flex; align-items: center; gap: 6px; font-family: sans-serif;">
+                  <span style="font-size: 18px;">🔵</span> JISP Toss 송금 결제
+              </div>
+              <button class="jisp-modal-close" id="jisp-payment-close" style="background: none; border: none; color: #94a3b8; font-size: 24px; cursor: pointer;">&times;</button>
+          </div>
+          <div class="jisp-modal-body" style="padding: 20px; display: flex; flex-direction: column; gap: 16px;">
+              <div style="background: #131926; padding: 16px; border-radius: 12px; border: 1px solid #1f293d; text-align: left;">
+                  <div style="font-size: 11px; font-weight: 600; color: #94a3b8; margin-bottom: 4px;">PRODUCT</div>
+                  <div style="font-size: 15px; font-weight: 700; color: #fff;">JISP Pro VIP 월 구독권</div>
+                  <div style="font-size: 18px; font-weight: 800; color: #3b82f6; margin-top: 6px;">₩3,900 <span style="font-size: 12px; font-weight: 400; color: #94a3b8;">/ 월 후원</span></div>
+              </div>
+
+              <div style="text-align: left; background: rgba(59, 130, 246, 0.05); border: 1px solid rgba(59, 130, 246, 0.15); padding: 12px; border-radius: 10px; font-size: 12px; line-height: 1.5; color: #93c5fd;">
+                  💡 토스뱅크 **1908-1176-4795 (정지후)** 계좌로 **3,900원**을 송금해 주세요. 모바일 환경의 경우 아래 버튼을 누르면 토스앱이 자동으로 열립니다.
+              </div>
+
+              <div style="text-align: left; background: rgba(16, 185, 129, 0.08); border: 1px solid rgba(16, 185, 129, 0.25); padding: 12px; border-radius: 10px; font-size: 11px; line-height: 1.5; color: #6ee7b7;">
+                  📅 <strong>Pro 등급 30일 이용 방식</strong>: 승인 시 30일간 Pro 혜택이 적용됩니다.<br>
+                  📱 <strong>Tip! 매달 신경 쓰지 않고 자동 정기결제 하려면?</strong><br>
+                  스마트폰 토스 앱 ➡️ <strong>[계좌 관리]</strong> ➡️ <strong>[자동이체 예약]</strong>에서 <strong>1908-1176-4795 (정지후)</strong> 계좌로 <strong>매월 3,900원</strong> 예약을 설정하시면 매달 신경 쓰지 않아도 Pro 등급이 지속됩니다!
+              </div>
+
+              <!-- Open Toss.me Link Button -->
+              <a href="supertoss://send?bank=%ED%86%A0%EC%8A%A4%EB%B1%85%ED%81%AC&accountNo=190811764795&amount=3900" target="_blank" style="display: block; width: 100%; padding: 14px; border-radius: 10px; border: none; background: #2563eb; color: #fff; font-weight: 700; font-size: 14px; text-align: center; text-decoration: none; box-shadow: 0 4px 12px rgba(37,99,235,0.3); box-sizing: border-box;">
+                  🔵 토스앱 열고 3,900원 송금하기
+              </a>
+
+              <!-- QR Code for PC Users -->
+              <div style="display: flex; flex-direction: column; align-items: center; gap: 8px; margin: 6px 0; background: #131926; padding: 12px; border-radius: 12px; border: 1px solid #1f293d;">
+                  <img src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=supertoss%3A%2F%2Fsend%3Fbank%3D%25ED%2586%25A0%25EC%258A%25A4%25EB%25B1%2585%25ED%2581%25AC%26accountNo%3D190811764795%26amount%3D3900" alt="Toss QR Code" style="border: 4px solid #fff; border-radius: 8px; width: 150px; height: 150px;">
+                  <span style="font-size: 11px; color: #94a3b8; font-weight: 500;">📷 PC에서는 스마트폰 카메라로 QR 코드를 스캔하세요!</span>
+              </div>
+
+              <div style="display: flex; gap: 10px;">
+                  <div style="flex: 1; display: flex; flex-direction: column; gap: 8px; text-align: left;">
+                      <label style="font-size: 11px; font-weight: 600; color: #94a3b8;">입금자명</label>
+                      <input type="text" id="toss-sender-name" placeholder="홍길동" style="width: 100%; padding: 12px; border-radius: 10px; border: 1px solid #1f293d; background: #131926; color: #fff; font-size: 13px; outline: none; box-sizing: border-box;">
+                  </div>
+                  <div style="flex: 1; display: flex; flex-direction: column; gap: 8px; text-align: left;">
+                      <label style="font-size: 11px; font-weight: 600; color: #94a3b8;">이메일 주소</label>
+                      <input type="email" id="toss-sender-email" placeholder="example@jisp.com" style="width: 100%; padding: 12px; border-radius: 10px; border: 1px solid #1f293d; background: #131926; color: #fff; font-size: 13px; outline: none; box-sizing: border-box;">
+                  </div>
+              </div>
+          </div>
+          <div class="jisp-modal-footer" style="padding: 16px 20px; border-top: 1px solid #1f293d; display: flex; gap: 10px; justify-content: flex-end;">
+              <button class="jisp-pay-submit" id="jisp-pay-submit-btn" style="width: 100%; padding: 12px; border-radius: 10px; border: none; background: #10b981; color: #fff; font-weight: 700; font-size: 13px; cursor: pointer; text-align: center; box-shadow: 0 4px 12px rgba(16,185,129,0.3);">
+                  송금 완료 확인 신청
+              </button>
+          </div>
+      </div>
+  </div>
+
+  <script type="module" src="js/app.js?v=1.0.5"></script>
+</body>
+</html>

@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>JISP Pro 결제 성공</title>
+    <style>
+        body {
+            background-color: #0d1117;
+            color: #ffffff;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+            text-align: center;
+        }
+        .container {
+            background: rgba(22, 27, 34, 0.8);
+            border: 1px solid #30363d;
+            border-radius: 16px;
+            padding: 40px;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+            max-width: 450px;
+            backdrop-filter: blur(12px);
+        }
+        .icon {
+            font-size: 64px;
+            margin-bottom: 24px;
+            animation: pulse 2s infinite;
+        }
+        h1 {
+            font-size: 24px;
+            margin-bottom: 12px;
+            color: #238636;
+        }
+        p {
+            color: #8b949e;
+            font-size: 14px;
+            line-height: 1.6;
+            margin-bottom: 24px;
+        }
+        .receipt-card {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            padding: 16px;
+            border-radius: 12px;
+            font-size: 12px;
+            color: #c9d1d9;
+            text-align: left;
+            margin-bottom: 24px;
+            line-height: 1.8;
+        }
+        .spinner {
+            border: 3px solid rgba(255, 255, 255, 0.1);
+            border-top: 3px solid #58a6ff;
+            border-radius: 50%;
+            width: 24px;
+            height: 24px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="icon">👑</div>
+        <h1>JISP Pro 송금 확인 및 신청 완료!</h1>
+        <p>토스를 통한 ₩3,900 송금 완료 확인 신청이 정상 접수되었습니다. 대표자 정지후 계좌 입금 확인 즉시 Pro 등급이 자동으로 반영됩니다. (시뮬레이터 체험용으로는 즉시 Pro가 활성화됩니다!)</p>
+        
+        <div class="receipt-card">
+            <strong>• 가맹점명:</strong> JISP Technology Inc. (Toss Transfer)<br>
+            <strong>• 정산 수령자:</strong> 대표 정지후 (Jung Ji-hoo)<br>
+            <strong>• 정산 계좌:</strong> 토스뱅크 1908-1176-4795<br>
+            <strong>• 상품명:</strong> JISP Pro 월 정기 구독권<br>
+            <strong>• 결제 수단:</strong> 토스 앱 뱅킹 송금 (supertoss://)<br>
+            <strong>• 승인 금액:</strong> ₩3,900 / 매월 자동결제
+        </div>
+        
+        <div class="spinner"></div>
+        <div style="margin-top: 16px; font-size: 13px; color: #58a6ff;">잠시 후 메인 서비스로 안전하게 이동합니다...</div>
+    </div>
+
+    <script>
+        // Apply Premium upgrade in LocalStorage
+        localStorage.setItem('jisp_premium', 'true');
+        
+        // Sync active user premium state
+        const userRaw = localStorage.getItem('jisp_user');
+        if (userRaw) {
+            try {
+                const user = JSON.parse(userRaw);
+                if (user && user.username) {
+                    localStorage.setItem('jisp_user_premium_' + user.username, 'true');
+                }
+            } catch(e) {}
+        }
+
+        // Delay and Redirect to origin
+        setTimeout(() => {
+            const origin = localStorage.getItem('jisp_pay_origin') || '../jisp-technology-portal/index.html';
+            window.location.replace(origin);
+        }, 3000);
+    </script>
+</body>
+</html>

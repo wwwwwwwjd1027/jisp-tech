@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>JISP Pro 결제 실패</title>
+    <style>
+        body {
+            background-color: #0d1117;
+            color: #ffffff;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+            text-align: center;
+        }
+        .container {
+            background: rgba(22, 27, 34, 0.8);
+            border: 1px solid #30363d;
+            border-radius: 16px;
+            padding: 40px;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+            max-width: 450px;
+            backdrop-filter: blur(12px);
+        }
+        .icon {
+            font-size: 64px;
+            margin-bottom: 24px;
+        }
+        h1 {
+            font-size: 24px;
+            margin-bottom: 12px;
+            color: #f85149;
+        }
+        p {
+            color: #8b949e;
+            font-size: 14px;
+            line-height: 1.6;
+            margin-bottom: 24px;
+        }
+        .retry-btn {
+            background: #21262d;
+            border: 1px solid #30363d;
+            color: #c9d1d9;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-block;
+            transition: background 0.2s;
+        }
+        .retry-btn:hover {
+            background: #30363d;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="icon">❌</div>
+        <h1>결제가 취소되었거나 실패했습니다.</h1>
+        <p>인증 과정에서 문제가 발생했거나 사용자가 결제를 취소했습니다. 다시 시도해 주세요.</p>
+        <a href="#" id="back-link" class="retry-btn">이전 화면으로 돌아가기</a>
+    </div>
+
+    <script>
+        document.getElementById('back-link').addEventListener('click', (e) => {
+            e.preventDefault();
+            const origin = localStorage.getItem('jisp_pay_origin') || '../jisp-technology-portal/index.html';
+            window.location.replace(origin);
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>JISP Talk - Stock Community</title>
+    <meta name="description" content="JISP Technology Stock Discussion & Trading Community">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-7866792361968009"
+     crossorigin="anonymous"></script>
+</head>
+<body>
+    <nav class="navbar">
+        <div class="nav-logo" onclick="window.close()">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="margin-right:8px;"><path d="M12 2L2 22h20L12 2z"/></svg>
+            JISP Talk <span style="font-size:10px; padding:2px 6px; background:#ef4444; border-radius:10px; margin-left:6px; color:#fff; font-weight:700;">COMMUNITY</span>
+        </div>
+        <ul class="nav-links">
+            <li><div id="portal-premium-btn" class="premium-badge">JISP Pro 가입</div></li>
+            <li><div id="portal-auth-btn" class="premium-badge" style="background:#2563eb; color:#fff; border-color:#2563eb; cursor:pointer;">로그인</div></li>
+        </ul>
+    </nav>
+
+    <div class="app-layout">
+        <!-- Sidebar Left -->
+        <aside class="sidebar-left">
+            <div class="menu-title">CATEGORIES</div>
+            <ul class="menu-list">
+                <li class="menu-item active" data-category="all">🔥 전체 피드</li>
+                <li class="menu-item" data-category="stocks">📈 우량 주식</li>
+                <li class="menu-item" data-category="crypto">🪙 암호화폐</li>
+                <li class="menu-item" data-category="etf">📊 ETF & 지수</li>
+                <li class="menu-item" data-category="smallcaps">🚀 개잡주 & 밈코인</li>
+                <li class="menu-item" data-category="my" id="menu-item-my" style="display: none; border-top: 1px solid rgba(255,255,255,0.06); padding-top: 10px; margin-top: 10px;">👤 내 작성 글</li>
+            </ul>
+        </aside>
+
+        <!-- Main Feed Column -->
+        <main class="feed-column">
+            <!-- Create Post Card -->
+            <div class="create-post-card" id="create-post-area">
+                <div style="font-weight: 700; font-size: 15px; margin-bottom: 12px; color: var(--text-main);">토론 참여하기</div>
+                <div class="auth-required-overlay" id="auth-post-overlay">
+                    <p style="margin-bottom: 10px; font-size:13px; color: var(--text-muted);">글을 작성하려면 로그인이 필요합니다.</p>
+                    <button class="action-btn" onclick="document.getElementById('portal-auth-btn').click()" style="padding: 6px 12px; font-size:12px;">로그인하기</button>
+                </div>
+                <input type="text" id="post-title" class="form-input" placeholder="흥미로운 주제나 종목 의견을 제목으로 적어주세요.">
+                <textarea id="post-content" class="form-textarea" placeholder="상세한 분석이나 투자 아이디어를 공유해주세요..."></textarea>
+                <div class="post-actions-row">
+                    <div style="display:flex; gap: 8px; align-items:center;">
+                        <label style="font-size:12px; color:var(--text-muted);">태그 종목:</label>
+                        <select id="post-ticker" class="form-select">
+                            <option value="GENERAL">일반 토론</option>
+                            <option value="NVDA">NVDA (NVIDIA)</option>
+                            <option value="AAPL">AAPL (Apple)</option>
+                            <option value="TSLA">TSLA (Tesla)</option>
+                            <option value="MSFT">MSFT (Microsoft)</option>
+                            <option value="BTC">BTC (Bitcoin)</option>
+                            <option value="ETH">ETH (Ethereum)</option>
+                            <option value="PEPE">PEPE (Pepe Coin)</option>
+                            <option value="SPY">SPY (S&P 500 ETF)</option>
+                            <option value="QQQ">QQQ (NASDAQ 100 ETF)</option>
+                        </select>
+                    </div>
+                    <button id="post-submit" class="action-btn">올리기</button>
+                </div>
+            </div>
+
+            <!-- Feed Filter/Search -->
+            <div class="feed-toolbar">
+                <input type="text" id="feed-search" class="search-input" placeholder="제목, 본문, 혹은 작성자 검색...">
+                <select id="feed-sort" class="sort-select">
+                    <option value="hot">🔥 실시간 핫 게시글</option>
+                    <option value="newest">🕒 최신 등록순</option>
+                </select>
+            </div>
+
+            <!-- Posts List Container -->
+            <div id="posts-container" class="posts-list">
+                <!-- Dynamically Populated -->
+            </div>
+        </main>
+
+        <!-- Sidebar Right -->
+        <aside class="sidebar-right">
+            <div class="trending-card">
+                <div class="trending-header">실시간 트렌딩 종목</div>
+                <div class="trending-list" id="trending-tickers-list">
+                    <!-- Populated dynamically -->
+                </div>
+            </div>
+
+            <div class="trending-card" style="margin-top: 16px;">
+                <div class="trending-header">JISP Pro 공지사항</div>
+                <div style="font-size: 11px; line-height: 1.5; color: var(--text-muted); padding: 8px 0;">
+                    <p style="margin-bottom: 6px;">📢 모의주식 투자 앱 2종의 상점 카탈로그에 18개의 신규 캐릭터 스킨 아이템이 업데이트되었습니다!</p>
+                    <p>💡 차트 분석기(Chart Pro)에 공매도 분석기능이 JISP Pro 회원 전용으로 신규 오픈되었습니다.</p>
+                </div>
+            </div>
+
+            <div class="trending-card" style="margin-top: 16px; position: relative; overflow: hidden; min-height: 160px;" id="ai-predictor-card">
+                <div class="trending-header">👑 AI 애널리스트 예측 신호</div>
+                
+                <!-- Premium Lock Overlay -->
+                <div class="premium-lock-overlay" id="ai-predictor-lock" style="display: none; position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: rgba(13, 17, 23, 0.95); backdrop-filter: blur(5px); z-index: 10; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 16px;">
+                    <div style="font-size: 24px; margin-bottom: 6px;">🔒</div>
+                    <div style="font-size: 11px; font-weight: 700; color: #fff; margin-bottom: 10px; line-height: 1.4;">JISP Pro 회원 전용 서비스<br><span style="font-weight:400; color:var(--text-muted);">실시간 급등주 AI 예측 신호방</span></div>
+                    <button class="upgrade-btn-small" id="ai-upgrade-btn" style="background:#2563eb; color:#fff; border:none; padding:6px 12px; border-radius:8px; font-size:10px; font-weight:700; cursor:pointer;">Pro 업그레이드</button>
+                </div>
+
+                <div class="ai-signal-list" id="ai-signal-list" style="padding-top: 8px; display: flex; flex-direction: column; gap: 8px;">
+                    <!-- Populated dynamically -->
+                </div>
+            </div>
+        </aside>
+    </div>
+
+
+
+    <!-- Auth (Login & Register) Mock Modal -->
+    <div class="jisp-modal-overlay" id="jisp-auth-overlay">
+        <div class="jisp-modal" style="max-width: 360px;">
+            <div class="jisp-modal-header">
+                <div class="jisp-modal-logo" id="auth-modal-header-title">로그인</div>
+                <button class="jisp-modal-close" id="jisp-auth-close">&times;</button>
+            </div>
+            <div class="jisp-modal-body">
+                <div class="auth-form-group" id="auth-username-group" style="display: none;">
+                    <label class="auth-label">사용자 이름</label>
+                    <input type="text" class="auth-input" id="auth-username-input" placeholder="이름을 입력하세요">
+                </div>
+                <div class="auth-form-group">
+                    <label class="auth-label">이메일 주소</label>
+                    <input type="email" class="auth-input" id="auth-email-input" placeholder="example@jisp.com">
+                </div>
+                <div class="auth-form-group" id="auth-password-group">
+                    <label class="auth-label">비밀번호</label>
+                    <input type="password" class="auth-input" id="auth-password-input" placeholder="••••••••">
+                </div>
+                <button class="auth-submit-btn" id="jisp-auth-submit-btn">로그인</button>
+                <div class="auth-switch" id="auth-switch-prompt">
+                    계정이 없으신가요? <span class="auth-switch-link" id="auth-switch-action">회원가입</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    </div>
+
+    </div>
+
+    <!-- Toss.me Transfer Modal Overlay -->
+    <div class="jisp-modal-overlay" id="jisp-payment-overlay">
+        <div class="jisp-modal" style="max-width: 480px; background: #0b0f19; border: 1px solid #1f293d; color: #fff; font-family: sans-serif; border-radius: 16px; overflow: hidden; box-shadow: 0 20px 40px rgba(0,0,0,0.5);">
+            <div class="jisp-modal-header" style="padding: 16px 20px; border-bottom: 1px solid #1f293d; display: flex; justify-content: space-between; align-items: center;">
+                <div class="jisp-modal-logo" style="font-weight: 700; color: #3b82f6; font-size: 16px; display: flex; align-items: center; gap: 6px; font-family: sans-serif;">
+                    <span style="font-size: 18px;">🔵</span> JISP Toss 송금 결제
+                </div>
+                <button class="jisp-modal-close" id="jisp-payment-close" style="background: none; border: none; color: #94a3b8; font-size: 24px; cursor: pointer;">&times;</button>
+            </div>
+            <div class="jisp-modal-body" style="padding: 20px; display: flex; flex-direction: column; gap: 16px;">
+                <div style="background: #131926; padding: 16px; border-radius: 12px; border: 1px solid #1f293d; text-align: left;">
+                    <div style="font-size: 11px; font-weight: 600; color: #94a3b8; margin-bottom: 4px;">PRODUCT</div>
+                    <div style="font-size: 15px; font-weight: 700; color: #fff;">JISP Pro VIP 월 구독권</div>
+                    <div style="font-size: 18px; font-weight: 800; color: #3b82f6; margin-top: 6px;">₩3,900 <span style="font-size: 12px; font-weight: 400; color: #94a3b8;">/ 월 후원</span></div>
+                </div>
+
+                <div style="text-align: left; background: rgba(59, 130, 246, 0.05); border: 1px solid rgba(59, 130, 246, 0.15); padding: 12px; border-radius: 10px; font-size: 12px; line-height: 1.5; color: #93c5fd;">
+                    💡 토스뱅크 **1908-1176-4795 (정지후)** 계좌로 **3,900원**을 송금해 주세요. 모바일 환경의 경우 아래 버튼을 누르면 토스앱이 자동으로 열립니다.
+                </div>
+
+                <div style="text-align: left; background: rgba(16, 185, 129, 0.08); border: 1px solid rgba(16, 185, 129, 0.25); padding: 12px; border-radius: 10px; font-size: 11px; line-height: 1.5; color: #6ee7b7;">
+                    📅 <strong>Pro 등급 30일 이용 방식</strong>: 승인 시 30일간 Pro 혜택이 적용됩니다.<br>
+                    📱 <strong>Tip! 매달 신경 쓰지 않고 자동 정기결제 하려면?</strong><br>
+                    스마트폰 토스 앱 ➡️ <strong>[계좌 관리]</strong> ➡️ <strong>[자동이체 예약]</strong>에서 <strong>1908-1176-4795 (정지후)</strong> 계좌로 <strong>매월 3,900원</strong> 예약을 설정하시면 매달 신경 쓰지 않아도 Pro 등급이 지속됩니다!
+                </div>
+
+                <!-- Open Toss.me Link Button -->
+                <a href="supertoss://send?bank=%ED%86%A0%EC%8A%A4%EB%B1%85%ED%81%AC&accountNo=190811764795&amount=3900" target="_blank" style="display: block; width: 100%; padding: 14px; border-radius: 10px; border: none; background: #2563eb; color: #fff; font-weight: 700; font-size: 14px; text-align: center; text-decoration: none; box-shadow: 0 4px 12px rgba(37,99,235,0.3); box-sizing: border-box;">
+                    🔵 토스앱 열고 3,900원 송금하기
+                </a>
+
+                <!-- QR Code for PC Users -->
+                <div style="display: flex; flex-direction: column; align-items: center; gap: 8px; margin: 6px 0; background: #131926; padding: 12px; border-radius: 12px; border: 1px solid #1f293d;">
+                    <img src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=supertoss%3A%2F%2Fsend%3Fbank%3D%25ED%2586%25A0%25EC%258A%25A4%25EB%25B1%2585%25ED%2581%25AC%26accountNo%3D190811764795%26amount%3D3900" alt="Toss QR Code" style="border: 4px solid #fff; border-radius: 8px; width: 150px; height: 150px;">
+                    <span style="font-size: 11px; color: #94a3b8; font-weight: 500;">📷 PC에서는 스마트폰 카메라로 QR 코드를 스캔하세요!</span>
+                </div>
+
+                <div style="display: flex; gap: 10px;">
+                    <div style="flex: 1; display: flex; flex-direction: column; gap: 8px; text-align: left;">
+                        <label style="font-size: 11px; font-weight: 600; color: #94a3b8;">입금자명</label>
+                        <input type="text" id="toss-sender-name" placeholder="홍길동" style="width: 100%; padding: 12px; border-radius: 10px; border: 1px solid #1f293d; background: #131926; color: #fff; font-size: 13px; outline: none; box-sizing: border-box;">
+                    </div>
+                    <div style="flex: 1; display: flex; flex-direction: column; gap: 8px; text-align: left;">
+                        <label style="font-size: 11px; font-weight: 600; color: #94a3b8;">이메일 주소</label>
+                        <input type="email" id="toss-sender-email" placeholder="example@jisp.com" style="width: 100%; padding: 12px; border-radius: 10px; border: 1px solid #1f293d; background: #131926; color: #fff; font-size: 13px; outline: none; box-sizing: border-box;">
+                    </div>
+                </div>
+            </div>
+            <div class="jisp-modal-footer" style="padding: 16px 20px; border-top: 1px solid #1f293d; display: flex; gap: 10px; justify-content: flex-end;">
+                <button class="jisp-pay-submit" id="jisp-pay-submit-btn" style="width: 100%; padding: 12px; border-radius: 10px; border: none; background: #10b981; color: #fff; font-weight: 700; font-size: 13px; cursor: pointer; text-align: center; box-shadow: 0 4px 12px rgba(16,185,129,0.3);">
+                    송금 완료 확인 신청
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>

@@ -1,0 +1,441 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ETF & Index Pro: 글로벌 ETF 모의투자 시뮬레이터</title>
+  <script>
+    window.addEventListener('error', function(e) {
+      alert("🚨 JavaScript Error Detected:\n" + e.message + "\nFile: " + e.filename + "\nLine: " + e.lineno);
+    });
+  </script>
+  <link rel="stylesheet" href="css/styles.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-7866792361968009"
+   crossorigin="anonymous"></script>
+</head>
+<body>
+
+  <div class="app-container">
+    <!-- Toast Notifications Area -->
+    <div class="toast-container" id="toast-container"></div>
+
+    <!-- Main Content Panel -->
+    <main class="app-main" id="app-main">
+
+      <!-- ① HOME VIEW -->
+      <section class="tab-view active" id="view-home">
+        <div class="header-row">
+          <h1>ETF Dashboard</h1>
+          <div style="display: flex; gap: 8px; align-items: center;">
+            <button class="btn-max" id="btn-reset-data">Reset Game</button>
+            <button id="jisp-premium-btn" class="btn-max" style="background:#f59e0b; color:#1e1b4b; border-color:#f59e0b; font-weight:700;">JISP Pro 가입</button>
+            <button id="portal-auth-btn" class="btn-max" style="background:#2563eb; color:#fff; border-color:#2563eb;">로그인</button>
+          </div>
+        </div>
+
+        <div class="glass-card">
+          <div class="assets-summary">
+            <div class="assets-label">Total Asset Value</div>
+            <div class="assets-amount" id="home-total-assets">$10,000.00</div>
+            <div class="assets-row">
+              <div class="assets-sub-item">
+                <div class="assets-label">Cash (Available)</div>
+                <div class="assets-sub-val" id="home-cash">$10,000.00</div>
+              </div>
+              <div class="assets-sub-item">
+                <div class="assets-label">Unrealized PnL</div>
+                <div class="assets-sub-val" id="home-unrealized-pnl">$0.00</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="glass-card">
+          <h2 style="margin-bottom: 12px;">My Avatar</h2>
+          <div style="display: flex; gap: 16px; align-items: center;">
+            <div style="width: 120px; height: 152px; background: var(--bg-input); border-radius: 12px; display: flex; align-items: center; justify-content: center; overflow: hidden;" id="home-character-preview">
+              <!-- Inline character render will go here -->
+            </div>
+            <div style="flex: 1; display: flex; flex-direction: column; gap: 8px;">
+              <div>
+                <div class="assets-label">Realized Profit</div>
+                <div style="font-size: 20px; font-weight: 800; color: var(--color-gold); font-family: monospace;" id="home-realized-profit">$0.00</div>
+              </div>
+              <div>
+                <div class="assets-label">Available Shopping Cash</div>
+                <div style="font-size: 15px; font-weight: 700; color: #fff; font-family: monospace;" id="home-shopping-cash">$0.00</div>
+              </div>
+              <button class="market-tab-btn active" style="margin-top: 4px; padding: 6px 12px;" onclick="switchTab('decorate')">Style Dress Up ➡️</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="glass-card">
+          <h2 style="margin-bottom: 12px;">Top Gainers</h2>
+          <div class="stock-list" id="home-top-gainers"></div>
+        </div>
+
+        <div class="glass-card">
+          <h2 style="margin-bottom: 12px;">Top Losers</h2>
+          <div class="stock-list" id="home-top-losers"></div>
+        </div>
+      </section>
+
+
+      <!-- ② MARKET VIEW -->
+      <section class="tab-view" id="view-market">
+        <div class="header-row">
+          <h1>ETF Market</h1>
+        </div>
+
+        <div class="market-tabs">
+          <button class="market-tab-btn active" id="market-tab-all">All ETFs</button>
+          <button class="market-tab-btn" id="market-tab-index">Index Trackers</button>
+          <button class="market-tab-btn" id="market-tab-sector">Sector ETFs</button>
+          <button class="market-tab-btn" id="market-tab-watchlist">Watchlist</button>
+        </div>
+
+        <div class="search-box">
+          <input type="text" class="search-input" id="market-search" placeholder="Search by ticker or ETF name...">
+        </div>
+
+        <div class="sector-filters" id="sector-filters">
+          <!-- Dynamically populated sector chips -->
+        </div>
+
+        <div class="stock-list" id="market-list">
+          <!-- Dynamically populated asset list -->
+        </div>
+      </section>
+
+
+      <!-- ③ PORTFOLIO VIEW -->
+      <section class="tab-view" id="view-portfolio">
+        <div class="header-row">
+          <h1>My Portfolio</h1>
+        </div>
+
+        <div class="glass-card">
+          <div class="portfolio-performance">
+            <div class="perf-item">
+              <div class="perf-label">Total Assets</div>
+              <div class="perf-val" style="font-size: 22px; color: #fff;" id="port-total-assets">$10,000.00</div>
+            </div>
+            <div class="perf-item" style="text-align: right;">
+              <div class="perf-label">Unrealized PnL</div>
+              <div class="perf-val" id="port-unrealized-pnl">$0.00 (0.00%)</div>
+            </div>
+          </div>
+          <div class="assets-row" style="border-color: rgba(255,255,255,0.04); margin-bottom: 0;">
+            <div class="assets-sub-item">
+              <div class="assets-label">Cash</div>
+              <div class="assets-sub-val" id="port-cash">$10,000.00</div>
+            </div>
+            <div class="assets-sub-item" style="text-align: right;">
+              <div class="assets-label">Trading Realized Profit</div>
+              <div class="assets-sub-val" style="color: var(--color-gold);" id="port-realized-profit">$0.00</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="market-tabs">
+          <button class="market-tab-btn active" id="port-tab-holdings">Holdings</button>
+          <button class="market-tab-btn" id="port-tab-history">Order History</button>
+        </div>
+
+        <div id="port-holdings-container">
+          <div class="stock-list" id="port-holdings-list"></div>
+        </div>
+
+        <div id="port-history-container" style="display: none;">
+          <div class="tx-list" id="port-history-list"></div>
+        </div>
+      </section>
+
+
+      <!-- ④ DECORATE VIEW -->
+      <section class="tab-view" id="view-decorate">
+        <div class="header-row">
+          <h1>Avatar Studio</h1>
+        </div>
+
+        <div class="decorate-container">
+          <!-- Interactive Character Card -->
+          <div class="character-card" id="character-card-main">
+            <!-- Render code -->
+          </div>
+
+          <div style="width: 100%; display: flex; gap: 8px;">
+            <div class="profit-banner" style="margin-bottom: 0; flex: 1; padding: 10px 14px;">
+              <div>
+                <div class="label" style="font-size: 11px;">Shopping Budget</div>
+                <div class="value" style="font-size: 18px;" id="deco-shopping-cash">$0.00</div>
+              </div>
+            </div>
+            <button class="market-tab-btn active" style="flex: 1; display: flex; align-items: center; justify-content: center; font-size: 14px; gap: 6px;" onclick="switchTab('shop')">
+              <span>🛒</span> Shop Clothes
+            </button>
+          </div>
+
+          <!-- Color & Hair Customization -->
+          <div class="glass-card customization-panel">
+            <div class="custom-tabs">
+              <button class="custom-tab-btn active" data-tab="hairStyle">Hair Style</button>
+              <button class="custom-tab-btn" data-tab="hairColor">Hair Color</button>
+              <button class="custom-tab-btn" data-tab="skinColor">Skin Tone</button>
+              <button class="custom-tab-btn" data-tab="eyeColor">Eye Color</button>
+            </div>
+            <div class="custom-grid" id="custom-options-grid">
+              <!-- Dynamically populated option blobs -->
+            </div>
+          </div>
+        </div>
+      </section>
+
+
+      <!-- ⑤ SHOP VIEW -->
+      <section class="tab-view" id="view-shop">
+        <div class="header-row">
+          <h1>Item Shop</h1>
+        </div>
+
+        <div class="profit-banner">
+          <div>
+            <div class="label">Profit Budget (Realized)</div>
+            <div class="value" id="shop-shopping-cash">$0.00</div>
+          </div>
+          <span style="font-size: 12px; color: var(--color-text-muted); text-align: right;">
+            Gain budget by selling ETFs for profit!<br>
+            Losses reduce your shopping budget.
+          </span>
+        </div>
+
+        <div class="shop-categories" id="shop-categories-container">
+          <!-- Dynamically populated shop categories -->
+        </div>
+
+        <div class="shop-items-grid" id="shop-items-grid">
+          <!-- Dynamically populated shop item cards -->
+        </div>
+        <div class="jisp-ad-banner" id="jisp-ad-banner" style="margin: 20px 16px 0 16px;">
+          <span>📢 [광고] JISP Pro 가입 시 👑 VIP 전용 아이템이 해제됩니다!</span>
+          <button class="jisp-ad-upgrade-btn" id="jisp-ad-upgrade-btn">구독</button>
+        </div>
+      </section>
+
+      <!-- ⑥ RANKING VIEW -->
+      <section class="tab-view" id="view-ranking">
+        <div class="header-row">
+          <h1>Global ETF Trader Ranking</h1>
+        </div>
+
+        <div class="glass-card" style="padding: 16px 20px; margin-bottom: 16px; background: rgba(59, 130, 246, 0.08); border-color: rgba(255,255,255,0.06);">
+          <div style="display: flex; justify-content: space-between; align-items: center;">
+            <div>
+              <div style="font-size: 11px; color: var(--color-text-muted);">내 현재 순위</div>
+              <div id="user-current-rank" style="font-size: 20px; font-weight: 800; color: #fff;">Calculating...</div>
+            </div>
+            <div style="text-align: right;">
+              <div style="font-size: 11px; color: var(--color-text-muted);">총 평가 자산</div>
+              <div id="user-ranking-assets" style="font-size: 16px; font-weight: 700; color: var(--color-gold);">$10,000.00</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="stock-list" id="ranking-list">
+          <!-- Dynamically populated ranking rows -->
+        </div>
+      </section>
+
+    </main>
+
+    <!-- Navigation Bar -->
+    <nav class="navbar">
+      <a class="nav-item active" onclick="switchTab('home')">
+        <span class="emoji">🏠</span>
+        <span>Home</span>
+      </a>
+      <a class="nav-item" onclick="switchTab('market')">
+        <span class="emoji">📊</span>
+        <span>Market</span>
+      </a>
+      <a class="nav-item" onclick="switchTab('portfolio')">
+        <span class="emoji">💼</span>
+        <span>Portfolio</span>
+      </a>
+      <a class="nav-item" onclick="switchTab('decorate')">
+        <span class="emoji">👤</span>
+        <span>Avatar</span>
+      </a>
+      <a class="nav-item" onclick="switchTab('shop')">
+        <span class="emoji">🛒</span>
+        <span>Shop</span>
+      </a>
+      <a class="nav-item" onclick="switchTab('ranking')">
+        <span class="emoji">🏆</span>
+        <span>Ranking</span>
+      </a>
+    </nav>
+  </div>
+
+  <!-- Detail Sheet Overlay for asset info & trading -->
+  <div class="detail-overlay" id="detail-overlay">
+    <div class="detail-sheet">
+      <div class="detail-header">
+        <div>
+          <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 2px;">
+            <h2 id="detail-ticker" style="font-size: 20px;">SPY</h2>
+            <span class="badge" id="detail-sector-badge">Index Trackers</span>
+            <span id="detail-watchlist-btn" style="cursor: pointer; font-size: 18px;">☆</span>
+          </div>
+          <div id="detail-name" style="font-size: 13px; color: var(--color-text-muted);">SPDR S&P 500 ETF</div>
+        </div>
+        <button class="detail-close" id="detail-close-btn">✕</button>
+      </div>
+
+      <div style="display: flex; justify-content: space-between; align-items: flex-end;">
+        <div>
+          <div id="detail-price" style="font-size: 28px; font-weight: 800; font-family: monospace;">$542.12</div>
+          <div id="detail-change" style="font-size: 13px; font-weight: 600; margin-top: 2px;">+$2.34 (+0.45%)</div>
+        </div>
+        <div style="text-align: right; font-size: 12px; color: var(--color-text-muted);">
+          <div>Vol: <span id="detail-volume" style="color: #fff; font-family: monospace;">12.4M</span></div>
+          <div>Cap: <span id="detail-marketcap" style="color: #fff; font-family: monospace;">530B</span></div>
+        </div>
+      </div>
+
+      <!-- Canvas Chart Container -->
+      <div class="chart-container">
+        <canvas class="chart-canvas" id="stock-chart-canvas"></canvas>
+      </div>
+
+      <!-- Trading Form Panel -->
+      <div class="trading-panel">
+        <div class="trading-tabs">
+          <button class="trading-tab-btn active buy-tab" id="trade-tab-buy">BUY</button>
+          <button class="trading-tab-btn sell-tab" id="trade-tab-sell">SELL</button>
+        </div>
+
+        <div class="trade-input-row">
+          <div class="trade-input-group">
+            <span>Qty:</span>
+            <input type="number" class="trade-input" id="trade-qty" value="1" min="1" step="1">
+          </div>
+          <button class="btn-max" id="trade-btn-max">MAX</button>
+        </div>
+
+        <div class="trade-info-row">
+          <span>Available Cash</span>
+          <span id="trade-available-cash" style="font-weight: 700; color: #fff;">$10,000.00</span>
+        </div>
+        <div class="trade-info-row">
+          <span>Shares Owned</span>
+          <span id="trade-owned-shares" style="font-weight: 700; color: #fff;">0 shares</span>
+        </div>
+        <div class="trade-info-row">
+          <span>Estimated Total</span>
+          <span id="trade-estimated-total" style="font-weight: 700; color: #fff; font-family: monospace;">$542.12</span>
+        </div>
+
+        <button class="trade-submit-btn buy" id="trade-submit-btn">Buy SPY</button>
+      </div>
+    </div>
+  </div>
+
+
+
+  <!-- Auth (Login & Register) Mock Modal -->
+  <div class="jisp-modal-overlay" id="jisp-auth-overlay">
+    <div class="jisp-modal" style="max-width: 360px;">
+      <div class="jisp-modal-header">
+        <div class="jisp-modal-logo" id="auth-modal-header-title">로그인</div>
+        <button class="jisp-modal-close" id="jisp-auth-close">&times;</button>
+      </div>
+      <div class="jisp-modal-body">
+        <div class="auth-form-group" id="auth-username-group" style="display: none; display: flex; flex-direction: column; gap: 8px; text-align: left; margin-bottom: 16px;">
+          <label class="auth-label" style="font-size: 13px; font-weight: 600; color: #94a3b8;">사용자 이름</label>
+          <input type="text" class="auth-input" id="auth-username-input" placeholder="이름을 입력하세요" style="width:100%; padding:12px; border-radius:12px; border:1px solid #334155; background:#0d1117; color:#fff; font-size:14px; outline:none;">
+        </div>
+        <div class="auth-form-group" style="display: flex; flex-direction: column; gap: 8px; text-align: left; margin-bottom: 16px;">
+          <label class="auth-label" style="font-size: 13px; font-weight: 600; color: #94a3b8;">이메일 주소</label>
+          <input type="email" class="auth-input" id="auth-email-input" placeholder="example@jisp.com" style="width:100%; padding:12px; border-radius:12px; border:1px solid #334155; background:#0d1117; color:#fff; font-size:14px; outline:none;">
+        </div>
+        <div class="auth-form-group" id="auth-password-group" style="display: flex; flex-direction: column; gap: 8px; text-align: left; margin-bottom: 16px;">
+          <label class="auth-label" style="font-size: 13px; font-weight: 600; color: #94a3b8;">비밀번호</label>
+          <input type="password" class="auth-input" id="auth-password-input" placeholder="비밀번호 입력" style="width:100%; padding:12px; border-radius:12px; border:1px solid #334155; background:#0d1117; color:#fff; font-size:14px; outline:none;">
+        </div>
+        <div class="auth-switch-prompt" id="auth-switch-prompt" style="font-size: 13px; color: #94a3b8; margin-top: 14px;">
+          계정이 없으신가요? <span class="auth-switch-link" id="auth-switch-action" style="color: #3b82f6; font-weight: 700; cursor: pointer;">회원가입</span>
+        </div>
+      </div>
+      <div class="jisp-modal-footer">
+        <button class="jisp-pay-submit" id="jisp-auth-submit-btn" style="width:100%; padding:12px; border-radius:12px; border:none; background:#3b82f6; color:#fff; font-weight:700; cursor:pointer;">로그인</button>
+      </div>
+    </div>
+  </div>
+
+  </div>
+
+  <!-- Toss.me Transfer Modal Overlay -->
+  <div class="jisp-modal-overlay" id="jisp-payment-overlay">
+      <div class="jisp-modal" style="max-width: 480px; background: #0b0f19; border: 1px solid #1f293d; color: #fff; font-family: sans-serif; border-radius: 16px; overflow: hidden; box-shadow: 0 20px 40px rgba(0,0,0,0.5);">
+          <div class="jisp-modal-header" style="padding: 16px 20px; border-bottom: 1px solid #1f293d; display: flex; justify-content: space-between; align-items: center;">
+              <div class="jisp-modal-logo" style="font-weight: 700; color: #3b82f6; font-size: 16px; display: flex; align-items: center; gap: 6px; font-family: sans-serif;">
+                  <span style="font-size: 18px;">🔵</span> JISP Toss 송금 결제
+              </div>
+              <button class="jisp-modal-close" id="jisp-payment-close" style="background: none; border: none; color: #94a3b8; font-size: 24px; cursor: pointer;">&times;</button>
+          </div>
+          <div class="jisp-modal-body" style="padding: 20px; display: flex; flex-direction: column; gap: 16px;">
+              <div style="background: #131926; padding: 16px; border-radius: 12px; border: 1px solid #1f293d; text-align: left;">
+                  <div style="font-size: 11px; font-weight: 600; color: #94a3b8; margin-bottom: 4px;">PRODUCT</div>
+                  <div style="font-size: 15px; font-weight: 700; color: #fff;">JISP Pro VIP 월 구독권</div>
+                  <div style="font-size: 18px; font-weight: 800; color: #3b82f6; margin-top: 6px;">₩3,900 <span style="font-size: 12px; font-weight: 400; color: #94a3b8;">/ 월 후원</span></div>
+              </div>
+
+              <div style="text-align: left; background: rgba(59, 130, 246, 0.05); border: 1px solid rgba(59, 130, 246, 0.15); padding: 12px; border-radius: 10px; font-size: 12px; line-height: 1.5; color: #93c5fd;">
+                  💡 토스뱅크 **1908-1176-4795 (정지후)** 계좌로 **3,900원**을 송금해 주세요. 모바일 환경의 경우 아래 버튼을 누르면 토스앱이 자동으로 열립니다.
+              </div>
+
+              <div style="text-align: left; background: rgba(16, 185, 129, 0.08); border: 1px solid rgba(16, 185, 129, 0.25); padding: 12px; border-radius: 10px; font-size: 11px; line-height: 1.5; color: #6ee7b7;">
+                  📅 <strong>Pro 등급 30일 이용 방식</strong>: 승인 시 30일간 Pro 혜택이 적용됩니다.<br>
+                  📱 <strong>Tip! 매달 신경 쓰지 않고 자동 정기결제 하려면?</strong><br>
+                  스마트폰 토스 앱 ➡️ <strong>[계좌 관리]</strong> ➡️ <strong>[자동이체 예약]</strong>에서 <strong>1908-1176-4795 (정지후)</strong> 계좌로 <strong>매월 3,900원</strong> 예약을 설정하시면 매달 신경 쓰지 않아도 Pro 등급이 지속됩니다!
+              </div>
+
+              <!-- Open Toss.me Link Button -->
+              <a href="supertoss://send?bank=%ED%86%A0%EC%8A%A4%EB%B1%85%ED%81%AC&accountNo=190811764795&amount=3900" target="_blank" style="display: block; width: 100%; padding: 14px; border-radius: 10px; border: none; background: #2563eb; color: #fff; font-weight: 700; font-size: 14px; text-align: center; text-decoration: none; box-shadow: 0 4px 12px rgba(37,99,235,0.3); box-sizing: border-box;">
+                  🔵 토스앱 열고 3,900원 송금하기
+              </a>
+
+              <!-- QR Code for PC Users -->
+              <div style="display: flex; flex-direction: column; align-items: center; gap: 8px; margin: 6px 0; background: #131926; padding: 12px; border-radius: 12px; border: 1px solid #1f293d;">
+                  <img src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=supertoss%3A%2F%2Fsend%3Fbank%3D%25ED%2586%25A0%25EC%258A%25A4%25EB%25B1%2585%25ED%2581%25AC%26accountNo%3D190811764795%26amount%3D3900" alt="Toss QR Code" style="border: 4px solid #fff; border-radius: 8px; width: 150px; height: 150px;">
+                  <span style="font-size: 11px; color: #94a3b8; font-weight: 500;">📷 PC에서는 스마트폰 카메라로 QR 코드를 스캔하세요!</span>
+              </div>
+
+              <div style="display: flex; gap: 10px;">
+                  <div style="flex: 1; display: flex; flex-direction: column; gap: 8px; text-align: left;">
+                      <label style="font-size: 11px; font-weight: 600; color: #94a3b8;">입금자명</label>
+                      <input type="text" id="toss-sender-name" placeholder="홍길동" style="width: 100%; padding: 12px; border-radius: 10px; border: 1px solid #1f293d; background: #131926; color: #fff; font-size: 13px; outline: none; box-sizing: border-box;">
+                  </div>
+                  <div style="flex: 1; display: flex; flex-direction: column; gap: 8px; text-align: left;">
+                      <label style="font-size: 11px; font-weight: 600; color: #94a3b8;">이메일 주소</label>
+                      <input type="email" id="toss-sender-email" placeholder="example@jisp.com" style="width: 100%; padding: 12px; border-radius: 10px; border: 1px solid #1f293d; background: #131926; color: #fff; font-size: 13px; outline: none; box-sizing: border-box;">
+                  </div>
+              </div>
+          </div>
+          <div class="jisp-modal-footer" style="padding: 16px 20px; border-top: 1px solid #1f293d; display: flex; gap: 10px; justify-content: flex-end;">
+              <button class="jisp-pay-submit" id="jisp-pay-submit-btn" style="width: 100%; padding: 12px; border-radius: 10px; border: none; background: #10b981; color: #fff; font-weight: 700; font-size: 13px; cursor: pointer; text-align: center; box-shadow: 0 4px 12px rgba(16,185,129,0.3);">
+                  송금 완료 확인 신청
+              </button>
+          </div>
+      </div>
+  </div>
+
+  <!-- Load all ES modules -->
+  <script type="module" src="js/app.js?v=3"></script>
+</body>
+</html>

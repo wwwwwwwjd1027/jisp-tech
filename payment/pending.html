@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>JISP Pro 입금 확인 대기 중</title>
+    <style>
+        body {
+            background-color: #0d1117;
+            color: #ffffff;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+            text-align: center;
+        }
+        .container {
+            background: rgba(22, 27, 34, 0.8);
+            border: 1px solid #30363d;
+            border-radius: 16px;
+            padding: 40px;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+            max-width: 450px;
+            backdrop-filter: blur(12px);
+        }
+        .icon {
+            font-size: 64px;
+            margin-bottom: 24px;
+            animation: pulse 2s infinite;
+        }
+        h1 {
+            font-size: 22px;
+            margin-bottom: 12px;
+            color: #f59e0b;
+        }
+        p {
+            color: #8b949e;
+            font-size: 14px;
+            line-height: 1.6;
+            margin-bottom: 24px;
+        }
+        .receipt-card {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            padding: 16px;
+            border-radius: 12px;
+            font-size: 12px;
+            color: #c9d1d9;
+            text-align: left;
+            margin-bottom: 24px;
+            line-height: 1.8;
+        }
+        .spinner {
+            border: 3px solid rgba(255, 255, 255, 0.1);
+            border-top: 3px solid #f59e0b;
+            border-radius: 50%;
+            width: 28px;
+            height: 28px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+    </style>
+</head>
+<body>
+    <div class="container" id="pending-container">
+        <div class="icon">⏳</div>
+        <h1>입금 확인 대기 중</h1>
+        <p>토스를 통한 ₩3,900 송금 완료 확인 신청이 대표 정지후님에게 접수되었습니다.<br>실제 입금이 확인되는 대로 등급이 자동으로 활성화됩니다.</p>
+        
+        <div class="receipt-card">
+            <strong>• 가맹점명:</strong> JISP Technology Inc.<br>
+            <strong>• 정산 수령자:</strong> 대표 정지후 (Jung Ji-hoo)<br>
+            <strong>• 정산 계좌:</strong> 토스뱅크 1908-1176-4795<br>
+            <strong>• 상품명:</strong> JISP Pro 월 정기 구독권<br>
+            <strong>• 승인 금액:</strong> ₩3,900
+        </div>
+        
+        <div class="spinner"></div>
+        <div style="margin-top: 16px; font-size: 13px; color: #f59e0b;" id="status-text">대표자의 입금 승인을 기다리는 중...</div>
+    </div>
+
+    <script>
+        function goBack() {
+            const origin = localStorage.getItem('jisp_pay_origin') || '../jisp-technology-portal/index.html';
+            window.location.replace(origin);
+        }
+
+        const email = localStorage.getItem('jisp_current_pending_email') || '';
+
+        // Check backend status periodically
+        const checkInterval = setInterval(() => {
+            if (!email) return;
+
+            fetch(`/api/payment/status?email=${encodeURIComponent(email)}`)
+            .then(res => res.json())
+            .then(data => {
+                if (data.status === 'approved') {
+                    clearInterval(checkInterval);
+                    
+                    // Unlock premium locally
+                    localStorage.setItem('jisp_premium', 'true');
+                    
+                    // Unlock user specific premium
+                    const userRaw = localStorage.getItem('jisp_user');
+                    if (userRaw) {
+                        try {
+                            const u = JSON.parse(userRaw);
+                            localStorage.setItem('jisp_user_premium_' + u.username, 'true');
+                        } catch(e) {}
+                    }
+
+                    // Show Success state UI
+                    const container = document.getElementById('pending-container');
+                    container.innerHTML = `
+                        <div class="icon" style="animation: pulse 1s infinite;">🎉</div>
+                        <h1 style="color: #10b981;">입금 확인 및 승인 완료!</h1>
+                        <p style="color: #a7f3d0;">지후 대표님이 입금을 승인했습니다.<br>JISP Pro의 모든 기능을 마음껏 이용해 보세요!</p>
+                        <div style="margin-top: 24px; font-size: 13px; color: #10b981;">잠시 후 메인 화면으로 돌아갑니다...</div>
+                    `;
+                    
+                    // Redirect back
+                    setTimeout(goBack, 2500);
+
+                } else if (data.status === 'rejected') {
+                    clearInterval(checkInterval);
+
+                    // Show Rejection state UI
+                    const container = document.getElementById('pending-container');
+                    container.innerHTML = `
+                        <div class="icon" style="animation: pulse 1.5s infinite; color: #ef4444;">❌</div>
+                        <h1 style="color: #ef4444;">입금 확인 및 승인 거절</h1>
+                        <p style="color: #f87171;">대표 정지후님이 송금 이체를 확인하지 못했습니다.<br>입금자명과 송금 금액(₩3,900)을 확인한 뒤 다시 신청해 주세요.</p>
+                        <button onclick="goBack()" style="background: #ef4444; color: white; border: none; padding: 12px 24px; border-radius: 10px; font-weight: 700; cursor: pointer; font-size: 14px; box-shadow: 0 4px 12px rgba(239,68,68,0.3); outline: none;">다시 시도하기</button>
+                    `;
+                }
+            })
+            .catch(err => console.error('Status fetch error:', err));
+        }, 1500);
+    </script>
+</body>
+</html>
