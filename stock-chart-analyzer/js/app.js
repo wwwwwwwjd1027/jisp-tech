@@ -776,31 +776,19 @@ async function loadAsset(ticker) {
     isKR = /^\d{6}$/.test(resolvedTicker);
   }
 
-  // 2. High-speed Instant Chart Generation (0.01s instant display)
+  // 2. Prepare Loading State
   let data = [];
   if (chart) {
-    chart.isLoading = false;
+    chart.isLoading = true;
+    chart.render();
   }
 
-  // Generate instant local data first so user sees chart in 0.01 seconds
-  if (currentTimeframe === 'yearly') {
-    data = generateYearlyData(resolvedTicker, basePrice, isCrypto);
-  } else if (currentTimeframe === 'minute' || currentTimeframe === 'tick') {
-    data = generateIntradayData(resolvedTicker, basePrice, currentTimeframe, isCrypto);
-  } else {
-    data = generateSimulatedDaily(resolvedTicker, basePrice, isCrypto);
-  }
+  // Clear UI price temporarily while loading
+  DOM.infoCurrentPrice.textContent = 'Loading...';
+  DOM.infoPriceChange.textContent = '-';
+  DOM.infoPriceChange.style.color = 'var(--text-muted)';
 
-  // Immediately render instant chart for 0ms delay experience
-  currentData = data;
-  if (chart) {
-    chart.setData(data);
-  }
-  updateStats(data);
-  updateRightSections(meta, data);
-  updateScore(data);
-
-  // 3. Fetch real Yahoo Finance Data asynchronously in background via single fast Express API
+  // 3. Fetch Real Yahoo Finance Data via Express API
   const API_BASE = window.JISP_API_BASE || '';
   const apiUrl = `${API_BASE}/api/chart?ticker=${encodeURIComponent(resolvedTicker)}&timeframe=${currentTimeframe}`;
 
@@ -818,49 +806,54 @@ async function loadAsset(ticker) {
       }
 
       if (realCandles && realCandles.length > 0) {
-        currentData = realCandles;
+        data = realCandles;
+        currentData = data;
+        
         if (chart) {
-          chart.setData(realCandles);
+          chart.isLoading = false;
+          chart.setData(data);
         }
-        updateStats(realCandles);
-        updateRightSections(meta, realCandles);
-        updateScore(realCandles);
+        
+        updateStats(data);
+        updateRightSections(meta, data);
+        updateScore(data);
+        runTechnicalAnalysis();
         addLog(`REALTIME MARKET DATA SYNCHRONIZED FOR [${resolvedTicker}].`, 'success');
+
+        // Current Price and Change calculation
+        const currentPrice = data[data.length - 1].close;
+        const prevClose = data[data.length - 2] ? data[data.length - 2].close : currentPrice;
+        const change = currentPrice - prevClose;
+        const changePercent = prevClose !== 0 ? (change / prevClose) * 100 : 0;
+        
+        // Formatting currency symbols
+        if (isKR) {
+          DOM.infoCurrentPrice.textContent = `₩${Math.round(currentPrice).toLocaleString()}`;
+          DOM.infoPriceChange.textContent = `${change >= 0 ? '+' : ''}${Math.round(change).toLocaleString()} (${changePercent >= 0 ? '+' : ''}${changePercent.toFixed(2)}%)`;
+        } else {
+          DOM.infoCurrentPrice.textContent = `$${currentPrice.toFixed(2)}`;
+          DOM.infoPriceChange.textContent = `${change >= 0 ? '+' : ''}${change.toFixed(2)} (${changePercent >= 0 ? '+' : ''}${changePercent.toFixed(2)}%)`;
+        }
+        
+        // Style text color (Green for rise, Pink for drop)
+        if (change >= 0) {
+          DOM.infoPriceChange.style.color = '#10b981'; // Green
+        } else {
+          DOM.infoPriceChange.style.color = '#ef4444'; // Red
+        }
+      } else {
+        throw new Error('No data returned');
       }
     })
     .catch(err => {
-      addLog(`FAST HYBRID FEED ACTIVE FOR [${resolvedTicker}].`, 'info');
+      addLog(`MARKET DATA API OFFLINE OR ERROR (${err.message}). NO DATA AVAILABLE FOR [${resolvedTicker}].`, 'error');
+      if (chart) {
+        chart.isLoading = false;
+        chart.setData([]);
+      }
+      DOM.infoCurrentPrice.textContent = 'N/A';
+      DOM.infoPriceChange.textContent = 'Error';
     });
-
-  if (chart) {
-    chart.isLoading = false;
-  }
-  currentData = data;
-  runTechnicalAnalysis();
-
-  // 3. Current Price and Change calculation
-  if (data.length > 0) {
-    const currentPrice = data[data.length - 1].close;
-    const prevClose = data[data.length - 2] ? data[data.length - 2].close : currentPrice;
-    const change = currentPrice - prevClose;
-    const changePercent = prevClose !== 0 ? (change / prevClose) * 100 : 0;
-    
-    // Formatting currency symbols
-    if (isKR) {
-      DOM.infoCurrentPrice.textContent = `₩${Math.round(currentPrice).toLocaleString()}`;
-      DOM.infoPriceChange.textContent = `${change >= 0 ? '+' : ''}${Math.round(change).toLocaleString()} (${changePercent >= 0 ? '+' : ''}${changePercent.toFixed(2)}%)`;
-    } else {
-      DOM.infoCurrentPrice.textContent = `$${currentPrice.toFixed(2)}`;
-      DOM.infoPriceChange.textContent = `${change >= 0 ? '+' : ''}${change.toFixed(2)} (${changePercent >= 0 ? '+' : ''}${changePercent.toFixed(2)}%)`;
-    }
-    
-    // Style text color (Green for rise, Pink for drop)
-    if (change >= 0) {
-      DOM.infoPriceChange.style.color = '#10b981'; // Green
-    } else {
-      DOM.infoPriceChange.style.color = '#ef4444'; // Red
-    }
-  }
 
   // 4. Update Financials (using preloaded or deterministic mock)
   let fin = FINANCIALS[resolvedTicker];
