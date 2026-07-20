@@ -777,6 +777,7 @@ async function loadAsset(ticker) {
   }
 
   // 2. High-speed Instant Chart Generation (0.01s instant display)
+  let data = [];
   if (chart) {
     chart.isLoading = false;
   }
