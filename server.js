@@ -233,6 +233,11 @@ app.post('/api/admin/revoke', adminAuth, (req, res) => {
     res.json({ success: true });
 });
 
+// Root redirect to main portal
+app.get('/', (req, res) => {
+    res.redirect('/jisp-technology-portal/index.html');
+});
+
 // Serve frontend static assets
 app.use(express.static(__dirname));
 
