@@ -114,6 +114,14 @@ app.post('/api/payment/request', (req, res) => {
     }
 
     const db = readDB();
+    
+    // Clear old rejected statuses for this email so new request starts fresh pending
+    db.deposits.forEach(d => {
+        if (d.email === email && d.status === 'rejected') {
+            d.status = 'superseded';
+        }
+    });
+
     const newDeposit = {
         id: Date.now().toString(),
         name,
@@ -134,9 +142,9 @@ app.get('/api/payment/status', (req, res) => {
     const user = db.users.find(u => u.email === email);
     if (user) checkUserExpiration(user, db);
 
-    const deposits = db.deposits.filter(d => d.email === email);
-    if (deposits.length > 0) {
-        const lastDep = deposits[deposits.length - 1];
+    const activeDeposits = db.deposits.filter(d => d.email === email && d.status !== 'superseded');
+    if (activeDeposits.length > 0) {
+        const lastDep = activeDeposits[activeDeposits.length - 1];
         res.json({ 
             status: lastDep.status,
             expiresAt: lastDep.expiresAt || null

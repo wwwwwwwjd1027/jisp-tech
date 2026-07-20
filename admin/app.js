@@ -109,7 +109,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 } else if (dep.status === 'approved') {
                     actionHtml = `<button class="btn-revoke" data-id="${dep.id}">멤버십 해지 (구독 취소)</button>`;
                 } else {
-                    actionHtml = `<span style="color: var(--text-muted); font-size:12px;">종료됨</span>`;
+                    actionHtml = `<button class="btn-approve" data-id="${dep.id}">다시 승인하기</button>`;
                 }
 
                 let expireText = '';
